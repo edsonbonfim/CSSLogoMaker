@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html ng-app="app">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CSS Logo Maker</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        nav {
+            width: 300px;
+            height: 100vh;
+            box-shadow: 0 0 10px #ccc;
+            z-index: 999;
+        }
+
+        nav form {
+            margin: 0 auto;
+            width: 90%;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        nav form input,
+        nav form select,
+        nav form textarea {
+            width: 100%;
+            padding: 7px 10px;
+            margin: 10px;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+
+        #container {
+            position: relative;
+            width: calc(100vw - 300px);
+            height: 100vh;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        span {
+            position: absolute;
+            display: block;
+        }
+
+        input[type=color] {
+            padding: 0;
+            border: 0;
+        }
+
+        .form-control:focus {
+            box-shadow: unset;
+        }
+    </style>
+</head>
+
+<body ng-controller="AppController">
+
+    <nav>
+        <form action="">
+            <input type="text" class="form-control" name="text" placeholder="Texto">
+            <select name="font" class="form-control">
+                <option value="">Fonte</option>
+                <option selected value="Arial">Arial</option>
+            </select>
+            <input type="number" class="form-control" name="size" placeholder="Tamanho" value="50">
+            <input type="color" class="form-control" name="color" value="#000000">
+            <textarea name="css" class="form-control" rows="5" placeholder="Extra CSS"></textarea>
+            <input type="submit" value="Pronto" class="btn btn-primary">
+        </form>
+    </nav>
+
+    <div id="container">
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.min.js"></script>
+    <script>
+
+        (function () {
+
+            'use strict'
+
+            angular
+                .module('app', [])
+                .controller('AppController', AppController)
+
+            function AppController($scope) {
+
+                let text = document.querySelector('input[name=text]')
+                let font = document.querySelector('select[name=font]')
+                let size = document.querySelector('input[name=size]')
+                let color = document.querySelector('input[name=color]')
+                let css   = document.querySelector('textarea[name=css')
+
+                let items = []
+
+                document.querySelectorAll('span').forEach(item => {
+                    items.push(item)
+                })
+
+                function addListenner(item) {
+
+                    move(item)
+
+                    // item.addEventListener('dblclick', ev => {
+
+                    //     ev.preventDefault()
+
+                    //     let a = angular.copy(ev.target.innerText)
+                    //     $scope.text = a
+                    //     console.log($scope.text)
+                    //     $scope.$apply()
+                    // })
+                }
+
+                // Editar texto
+                // span.addEventListener('dblclick', event => {
+                //     $scope.text = event.target.innerText
+                //     $scope.$apply()
+                // })
+
+                let container = document.getElementById('container')
+
+                let form = document.querySelector('form')
+
+                form.addEventListener('submit', function (event) {
+
+                    event.preventDefault()
+
+                    let span = document.createElement('span')
+
+                    span.innerText = text.value
+
+                    span.style = `
+                        color: ${ color.value};
+                        font: ${ size.value}pt ${font.value};
+                        ${ css.value }
+                    `
+
+                    container.appendChild(span)
+
+                    event.target.reset()
+
+                    addListenner(span)
+
+                    $scope.$apply()
+                })
+            }
+
+        })()
+
+    </script>
+
+
+    <script>
+        function move(dragItem) {
+            var active = false;
+            var currentX;
+            var currentY;
+            var initialX;
+            var initialY;
+            var xOffset = 0;
+            var yOffset = 0;
+
+            container.addEventListener("touchstart", dragStart, false);
+            container.addEventListener("touchend", dragEnd, false);
+            container.addEventListener("touchmove", drag, false);
+
+            container.addEventListener("mousedown", dragStart, false);
+            container.addEventListener("mouseup", dragEnd, false);
+            container.addEventListener("mousemove", drag, false);
+
+            function dragStart(e) {
+
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+
+                if (e.target === dragItem) {
+                    active = true;
+                }
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+
+                active = false;
+            }
+
+            function drag(e) {
+
+                if (active) {
+
+                    e.preventDefault();
+
+                    if (e.type === "touchmove") {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    setTranslate(currentX, currentY, dragItem);
+                }
+            }
+
+            function setTranslate(xPos, yPos, el) {
+                el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+            }
+        }
+    </script>
+</body>
+
+</html>
